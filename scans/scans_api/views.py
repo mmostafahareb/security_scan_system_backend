@@ -25,31 +25,6 @@ class ProjectsViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectsSerializer
     def create(self, request, *args, **kwargs):
         raise PermissionDenied("Directly posting a new project is not allowed")
-    @action(detail=False, methods=['post'])
-    def create_from_git(self, request):
-        git_url = request.data.get('git_url')
-        project_id = request.data.get('project_id')
-        project_directory = os.path.basename(git_url.rstrip('.git/').rstrip('/'))
-
-        if not git_url or not project_id:
-            return Response({"error": "git_url and project_id are required fields"}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            project = Projects.objects.get(pk=project_id)
-        except Projects.DoesNotExist:
-            return Response({"error": "Project not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        with tempfile.TemporaryDirectory() as temp_dir:
-            try:
-                Repo.clone_from(git_url, temp_dir)
-            except Exception as e:
-                return Response({"error": f"Error cloning the repository: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Your logic for processing the cloned repository goes here
-            # For example, you can store the repository files or extract relevant information
-
-        serializer = ProjectsSerializer(project)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'])
     def create_from_git(self, request):
