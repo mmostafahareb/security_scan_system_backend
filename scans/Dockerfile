@@ -22,7 +22,8 @@ WORKDIR /app
 COPY . /app
 
 # Install any needed packages specified in requirements.txt
-RUN pip install --trusted-host pypi.python.org -r requirements.txt
+RUN pip install --trusted-host pypi.python.org --default-timeout=6000 -r requirements.txt
+
 
 # Install CodeQL
 RUN apt-get update && \
