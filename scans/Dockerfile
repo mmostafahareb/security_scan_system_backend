@@ -31,9 +31,6 @@ RUN wget https://github.com/github/codeql-cli-binaries/releases/latest/download/
 ENV PYTHONUNBUFFERED 1
 ENV PATH="/usr/bin/codeql:${PATH}"
 
-# Create volume for SQLite database
-VOLUME /app/db
-
 # Expose port 8000 for Django server
 EXPOSE 8000
 
