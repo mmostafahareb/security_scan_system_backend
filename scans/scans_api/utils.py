@@ -47,13 +47,12 @@ def scan_dockerfile(directory, scan_id):
     scans.save()
 
 def scan_code(directory, scan_id):
-    scans = Scans(scan_id=scan_id)
+    scan = Scans.objects.get(scan_id=scan_id)
     try:
         for language in ["cpp", "java", "ruby", "javascript", "python"]:
             try:
-                subprocess.check_output(["codeql", "database", "create", f"--language={language}", "database", directory], stderr=subprocess.STDOUT)
-                subprocess.check_output(["codeql", "database", "analyze", "--format=sarif-latest", "--output=result.sarif", "database"], stderr=subprocess.STDOUT)
-
+                subprocess.check_output(["codeql", "database", "create", "--language=" + language, "database", "--source-root", directory], stderr=subprocess.STDOUT)
+                subprocess.check_output(["codeql", "database", "analyze", "database", "codeql-suites/" + language + "-code-scanning.qls", "--format=sarif-latest", "--output=result.sarif"], stderr=subprocess.STDOUT)
                 with open("result.sarif") as f:
                     sarif_data = json.load(f)
 
@@ -171,7 +170,7 @@ def parse_package_lock(file_path):
     package_list = [f"npm:{pkg_name}:{packages[pkg_name]['version']}" for pkg_name in packages]
 
     return package_list
-def scan_credentials(directory, project_id):
+def scan_credentials(directory, scan_id):
     # Define a regular expression to match hardcoded credentials
     credential_regex = re.compile(r'(password|key|token|secret)\s*=\s*[\'\"]\S+[\'\"]')
     tokenizer = Tokenizer()
@@ -192,7 +191,7 @@ def scan_credentials(directory, project_id):
                         cred = Hardcoded_Creds(file_location=filepath, line_of_code=i+1)
                         cred.save()
                 # Update the Scans model
-                scan = Scans.objects.get(project_id=project_id)
+                scan = Scans.objects.get(scan_id=scan_id)
                 scan.hardcoded_creds.add(cred)
 
 def get_third_parties(directory, scan_id):
@@ -266,9 +265,9 @@ def scan_third_parties(directory, scan_id):
             cve_id = vulnerability.get("id")
             # description, suggested_fix, and severity are not provided in the response sample
             # you may need to make another API request to get these details or modify the code accordingly
-            description = ""
-            suggested_fix = ""
-            severity = ""
+            description = f"version of third party has a vulnerability. {vulnerability.get("modified")}"
+            suggested_fix = "update the third party to a cleaner version"
+            severity = "Medium"
             
             bom_object, created = Bom.objects.get_or_create(source=dependencies[index][0], artifact=dependencies[index][1], version=dependencies[index][2])
             bom_objects.append(bom_object)
