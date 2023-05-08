@@ -30,6 +30,7 @@ class ProjectsViewSet(viewsets.ModelViewSet):
     def create_from_git(self, request):
         git_url = request.data.get('git_url')
         project_directory = os.path.basename(git_url.rstrip('.git/').rstrip('/'))
+        assigned_team_id = request.data.get('assigned_team_id')
 
         # ...
         with tempfile.TemporaryDirectory() as temp_dir:
