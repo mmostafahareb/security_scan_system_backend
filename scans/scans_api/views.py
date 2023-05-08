@@ -87,7 +87,7 @@ class ProjectsViewSet(viewsets.ModelViewSet):
         # Set the directory attribute based on the project object
         directory = project.project_directory
 
-        scan_response = scan_project(scan, directory)
+        scan_response = scan_project(scan.scan_id, directory)
         return Response(scan_response.data, status=status.HTTP_200_OK)
 class ScansViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Scans.objects.all()

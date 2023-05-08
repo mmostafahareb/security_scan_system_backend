@@ -193,7 +193,7 @@ def scan_credentials(directory, project_id):
                 scan.hardcoded_creds.add(cred)
 
 def get_third_parties(directory, scan_id):
-    scans = Scans.objects.create(scan_id=scan_id)
+    scans = Scans.objects.get(scan_id=scan_id)
 
     # Mapping of file extensions to parsing functions
     parsing_functions = {
@@ -242,7 +242,7 @@ def scan_third_parties(directory, scan_id):
     osv_response = requests.post(OSV_API_URL, json=osv_payload).json()
 
     # Update the scans object with vulnerabilities and BOM objects
-    scans = Scans.objects.create(scan_id=scan_id)
+    scans = Scans.objects.get(scan_id=scan_id)
     bom_objects = []
     vulnerability_objects = []
     for index, query_result in enumerate(osv_response):
