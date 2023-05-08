@@ -14,7 +14,7 @@ from .utils import *
 import time
 class UsersViewSet(viewsets.ModelViewSet):
     queryset = Users.objects.all()
-    serializer_class = UsersSerializerh
+    serializer_class = UsersSerializer
 
 class TeamsViewSet(viewsets.ModelViewSet):
     queryset = Teams.objects.all()
