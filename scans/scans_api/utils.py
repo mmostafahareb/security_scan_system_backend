@@ -265,7 +265,7 @@ def scan_third_parties(directory, scan_id):
             cve_id = vulnerability.get("id")
             # description, suggested_fix, and severity are not provided in the response sample
             # you may need to make another API request to get these details or modify the code accordingly
-            description = f"version of third party has a vulnerability. {vulnerability.get("modified")}"
+            description = f'version of third party has a vulnerability. {vulnerability.get("modified")}'
             suggested_fix = "update the third party to a cleaner version"
             severity = "Medium"
             
