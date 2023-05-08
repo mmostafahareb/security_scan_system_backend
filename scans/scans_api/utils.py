@@ -226,7 +226,7 @@ def get_third_parties(directory, scan_id):
     return dependencies
 OSV_API_URL = "https://api.osv.dev/v1/search/bulk"
 
-def scan_third_parties(directory, scan_id):
+ddef scan_third_parties(directory, scan_id):
     # Scan the project and get the list of dependencies
     dependencies = get_third_parties(directory, scan_id)
 
@@ -234,44 +234,56 @@ def scan_third_parties(directory, scan_id):
     osv_query_objects = []
     for dep in dependencies:
         repo, dependency, version = dep.split(":")
-        osv_query_object = {"affects": [{"name": dependency, "version": version, "ecosystem": repo}]}
+        osv_query_object = {
+            "package": {
+                "ecosystem": repo,
+                "name": dependency
+            },
+            "version": version
+        }
         osv_query_objects.append(osv_query_object)
     osv_payload = {"queries": osv_query_objects}
 
     # Send the request to the OSV API
-    osv_response = requests.post(OSV_API_URL, json=osv_payload).json()
+    response = requests.post(OSV_API_URL, json=osv_payload)
+
+    if response.headers['content-type'] == 'application/json':
+        osv_response = response.json()
+    else:
+        print("Unexpected content type:", response.headers['content-type'])
+        return
 
     # Update the scans object with vulnerabilities and BOM objects
     scans = Scans.objects.get(scan_id=scan_id)
     bom_objects = []
     vulnerability_objects = []
-    for index, query_result in enumerate(osv_response):
-        vulnerabilities = query_result.get("vulnerabilities", [])
+    for index, query_result in enumerate(osv_response.get("results", [])):
+        vulnerabilities = query_result.get("vulns", [])
         for vulnerability in vulnerabilities:
             cve_id = vulnerability.get("id")
-            description = vulnerability.get("description")
-            suggested_fix = vulnerability.get("fix", {}).get("diff")
-            severity = vulnerability.get("cvssScore", {}).get("severity")
-            for affected_package in vulnerability.get("affected", []):
-                package_name = affected_package.get("name")
-                package_version = affected_package.get("version")
-                package_ecosystem = affected_package.get("ecosystem")
-                bom_object, created = Bom.objects.get_or_create(source=package_ecosystem, artifact=package_name, version=package_version)
-                bom_objects.append(bom_object)
-                vulnerability_object = Vulnerabilities.objects.create(
-                    type="OSV",
-                    file_location="",
-                    line_of_code="",
-                    severity=severity,
-                    cve_id=cve_id,
-                    description=description,
-                    suggested_fix=suggested_fix
-                )
-                vulnerability_object.bom.add(bom_object)
-                vulnerability_objects.append(vulnerability_object)
+            # description, suggested_fix, and severity are not provided in the response sample
+            # you may need to make another API request to get these details or modify the code accordingly
+            description = ""
+            suggested_fix = ""
+            severity = ""
+            
+            bom_object, created = Bom.objects.get_or_create(source=dependencies[index][0], artifact=dependencies[index][1], version=dependencies[index][2])
+            bom_objects.append(bom_object)
+            vulnerability_object = Vulnerabilities.objects.create(
+                type="OSV",
+                file_location="",
+                line_of_code="",
+                severity=severity,
+                cve_id=cve_id,
+                description=description,
+                suggested_fix=suggested_fix
+            )
+            vulnerability_object.bom.add(bom_object)
+            vulnerability_objects.append(vulnerability_object)
     scans.bom.set(bom_objects)
     scans.vulnerabilities.set(vulnerability_objects)
     scans.save()
+
 def scan_project(scan_id,directory):
     scan_credentials(directory,scan_id)
     scan_third_parties(directory, scan_id)
