@@ -15,7 +15,7 @@ class Users(models.Model):
 class Projects(models.Model):
     project_id = models.AutoField(primary_key=True)
     project_directory = models.TextField()
-    assigned_team_id = models.ForeignKey(Teams, on_delete=models.CASCADE)
+    assigned_team_id = models.ForeignKey(Teams, on_delete=models.CASCADE, null=True)
 
 
 class ScansManager(models.Manager):
