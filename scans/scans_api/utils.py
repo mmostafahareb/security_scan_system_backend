@@ -51,7 +51,7 @@ def scan_code(directory, scan_id):
     try:
         for language in ["cpp", "java", "ruby", "javascript", "python"]:
             try:
-                subprocess.check_output(["codeql", "database", "create", f"--language={language}", "--no-joins", "database", directory], stderr=subprocess.STDOUT)
+                subprocess.check_output(["codeql", "database", "create", f"--language={language}", "database", directory], stderr=subprocess.STDOUT)
                 subprocess.check_output(["codeql", "database", "analyze", "--format=sarif-latest", "--output=result.sarif", "database"], stderr=subprocess.STDOUT)
 
                 with open("result.sarif") as f:
@@ -78,7 +78,10 @@ def scan_code(directory, scan_id):
                 continue
 
     finally:
-        subprocess.check_output(["codeql", "database", "remove", "database"], stderr=subprocess.STDOUT)
+        try:
+            subprocess.check_output(["codeql", "database", "remove", "database"], stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            print(f"Error while removing CodeQL database: {e}")
 
     scans.save()
 def parse_requirements(file_path):
