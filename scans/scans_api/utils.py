@@ -273,9 +273,7 @@ def scan_third_parties(directory, scan_id):
     scans.vulnerabilities.set(vulnerability_objects)
     scans.save()
 def scan_project(directory,scan_id):
-    folders = [folder for folder in os.listdir('.')
-           if os.path.isdir(os.path.join('.', folder)) and folder.startswith(f"{directory}")]
-    scan_credentials(folders[0],scan_id)
-    scan_third_parties(folders[0], scan_id)
-    scan_dockerfile(folders[0], scan_id)
-    scan_code(folders[0], scan_id)
+    scan_credentials(directory,scan_id)
+    scan_third_parties(directory, scan_id)
+    scan_dockerfile(directory, scan_id)
+    scan_code(directory, scan_id)
