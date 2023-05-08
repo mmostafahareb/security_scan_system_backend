@@ -1,6 +1,6 @@
 # Use an official Python runtime as a parent image
 FROM python:3.9-slim-buster
-
+USER root
 # Install required packages
 RUN apt-get update && \
     apt-get -y install apt-transport-https ca-certificates curl gnupg lsb-release && \
@@ -17,15 +17,15 @@ WORKDIR /app
 # Copy the current directory contents into the container at /app
 COPY . /app
 
-# Install any needed packages specified in requirements.txt
-RUN pip install --trusted-host pypi.python.org -r requirements.txt
-
 # Install CodeQL
 RUN wget https://github.com/github/codeql-cli-binaries/releases/latest/download/codeql-linux64.zip && \
     unzip codeql-linux64.zip && \
     rm codeql-linux64.zip && \
     mv codeql /usr/bin/codeql && \
-    codeql --version
+    chmod +x /usr/bin/codeql
+
+# Install any needed packages specified in requirements.txt
+RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
 # Set the environment variable for Django and CodeQL
 ENV PYTHONUNBUFFERED 1
@@ -35,4 +35,5 @@ ENV PATH="/usr/bin/codeql:${PATH}"
 EXPOSE 8000
 
 # Start Django server
+
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
