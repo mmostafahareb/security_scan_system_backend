@@ -226,7 +226,7 @@ def get_third_parties(directory, scan_id):
     return dependencies
 OSV_API_URL = "https://api.osv.dev/v1/search/bulk"
 
-ddef scan_third_parties(directory, scan_id):
+def scan_third_parties(directory, scan_id):
     # Scan the project and get the list of dependencies
     dependencies = get_third_parties(directory, scan_id)
 
