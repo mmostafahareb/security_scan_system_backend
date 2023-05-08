@@ -82,7 +82,7 @@ def scan_code(directory, scan_id):
         except subprocess.CalledProcessError as e:
             print(f"Error while removing CodeQL database: {e}")
 
-    scans.save()
+    scan.save()
 def parse_requirements(file_path):
     # Read the requirements.txt file
     with open(file_path, "r") as file:
