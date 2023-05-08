@@ -272,7 +272,7 @@ def scan_third_parties(directory, scan_id):
     scans.bom.set(bom_objects)
     scans.vulnerabilities.set(vulnerability_objects)
     scans.save()
-def scan_project(directory,scan_id):
+def scan_project(scan_id,directory):
     scan_credentials(directory,scan_id)
     scan_third_parties(directory, scan_id)
     scan_dockerfile(directory, scan_id)
